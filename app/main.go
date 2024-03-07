@@ -1,7 +1,7 @@
 package main
 
 import (
-	life "github.com/Asp1kkk/Go-Life/game"
+	life "github.com/Asp1kkk/Go-Life/pkg/life"
 
 	"fmt"
 )
