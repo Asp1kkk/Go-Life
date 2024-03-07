@@ -1,4 +1,4 @@
-package main
+package life
 
 import (
 	"errors"
@@ -79,20 +79,41 @@ func (w *World) Next(x, y int) bool {
 	return false
 }
 
-func (w *World) Seed() {
-	for _, row := range w.Cells {
-		for i := range row {
-			if rand.Intn(5) == 1 {
-				row[i] = true
-			}
-		}
-	}
-}
-
 func NextState(oldWorld, newWorld *World) {
 	for i := 0; i < oldWorld.Height; i++ {
 		for j := 0; j < oldWorld.Width; j++ {
 			newWorld.Cells[i][j] = oldWorld.Next(i, j)
+		}
+	}
+}
+
+func (w *World) RandInit(percentage int) {
+	numAlive := percentage * w.Height * w.Width / 100
+
+	w.fillAlive(numAlive)
+
+	r := rand.New(rand.NewSource(time.Now().Unix()))
+
+	// Рандомно меняем местами
+	for i := 0; i < w.Height*w.Width; i++ {
+		randRowLeft := r.Intn(w.Width)
+		randColLeft := r.Intn(w.Height)
+		randRowRight := r.Intn(w.Width)
+		randColRight := r.Intn(w.Height)
+
+		w.Cells[randRowLeft][randColLeft] = w.Cells[randRowRight][randColRight]
+	}
+}
+
+func (w *World) fillAlive(num int) {
+	aliveCount := 0
+	for j, row := range w.Cells {
+		for k := range row {
+			w.Cells[j][k] = true
+			aliveCount++
+			if aliveCount == num {
+				return
+			}
 		}
 	}
 }
@@ -148,27 +169,4 @@ func (w *World) LoadState(filename string) error {
 		}
 	}
 	return nil
-}
-
-func main() {
-	height := 10
-	width := 10
-
-	currentWorld := NewWorld(height, width)
-
-	nextWorld := NewWorld(height, width)
-
-	currentWorld.Seed()
-
-	for {
-		fmt.Println(currentWorld)
-
-		NextState(currentWorld, nextWorld)
-
-		currentWorld, nextWorld = nextWorld, currentWorld
-
-		time.Sleep(2 * time.Second)
-
-		fmt.Print("\033[H\033[2J")
-	}
 }
